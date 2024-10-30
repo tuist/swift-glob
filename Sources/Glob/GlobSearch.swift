@@ -63,7 +63,7 @@ public func search(
                                     // for patterns like `**/*.swift`, parent folders won't be matched but we don't want to skip those folder's descendents or we won't find the files that do match
                                     let skipDescendents = !include.sections.contains(where: {
                                         switch $0 {
-                                        case .pathWildcard:
+                                        case .pathWildcard, .componentWildcard:
                                             return true
                                         default:
                                             return false
