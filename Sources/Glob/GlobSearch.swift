@@ -43,7 +43,7 @@ public func search(
                     }
                     
                     if include.sections.isEmpty {
-                        if FileManager.default.fileExists(atPath: baseURL.absoluteString.replacingOccurrences(of: "%20", with: " ")) {
+                        if FileManager.default.fileExists(atPath: baseURL.absoluteString.removingPercentEncoding ?? baseURL.absoluteString) {
                             continuation.yield(baseURL)
                         }
                         continue
@@ -52,7 +52,7 @@ public func search(
                     
                     var isDirectory: ObjCBool = false
                     guard
-                        FileManager.default.fileExists(atPath: baseURL.absoluteString.replacingOccurrences(of: "%20", with: " "), isDirectory: &isDirectory),
+                        FileManager.default.fileExists(atPath: baseURL.absoluteString.removingPercentEncoding ?? baseURL.absoluteString, isDirectory: &isDirectory),
                         isDirectory.boolValue
                     else { continue }
                     
