@@ -37,7 +37,16 @@ public func search(
                 for include in include {
                     let (baseURL, include) = switch include.sections.first {
                     case let .constant(constant):
-                        (baseURL.appending(path: constant.hasSuffix("/") ? String(constant.dropLast()) : constant), Pattern(sections: Array(include.sections.dropFirst()), options: include.options))
+                        if constant.hasSuffix("/") || include.sections.count == 1 {
+                            (baseURL.appending(path: constant.dropLast()), Pattern(sections: Array(include.sections.dropFirst()), options: include.options))
+                        } else if case .componentWildcard = include.sections[1] {
+                            (
+                                baseURL.appending(path: constant.components(separatedBy: "/").dropLast().joined(separator: "/")),
+                                Pattern(sections: [.constant(constant.components(separatedBy: "/").last ?? "")] + Array(include.sections.dropFirst()), options: include.options)
+                            )
+                        } else {
+                            (baseURL.appending(path: constant), Pattern(sections: Array(include.sections.dropFirst()), options: include.options))
+                        }
                     default:
                         (baseURL, include)
                     }
