@@ -69,6 +69,7 @@ public func search(
                     
                     try await search(
                         directory: baseURL,
+                        symbolicLinkDestination: nil,
                         matching: { _, relativePath in
                                 guard include.match(relativePath) else {
                                     // for patterns like `**/*.swift`, parent folders won't be matched but we don't want to skip those folder's descendents or we won't find the files that do match
@@ -115,6 +116,7 @@ public func search(
 @available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
 fileprivate func search(
     directory: URL,
+    symbolicLinkDestination: URL?,
     matching: @escaping @Sendable (_ url: URL, _ relativePath: String) throws -> MatchResult,
     includingPropertiesForKeys keys: [URLResourceKey],
     skipHiddenFiles: Bool,
@@ -128,7 +130,7 @@ fileprivate func search(
         options.insert(.skipsHiddenFiles)
     }
     let contents = try FileManager.default.contentsOfDirectory(
-        at: directory,
+        at: symbolicLinkDestination ?? directory,
         includingPropertiesForKeys: keys + [.isDirectoryKey],
         options: options
     )
@@ -147,11 +149,26 @@ fileprivate func search(
             
             guard !matchResult.skipDescendents else { continue }
             
-            let resourceValues = try url.resourceValues(forKeys: [.isDirectoryKey])
+            let resourceValues = try url.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+            let isDirectory: Bool
+            let symbolicLinkDestination: URL?
             if resourceValues.isDirectory == true {
+                isDirectory = true
+                symbolicLinkDestination = nil
+            } else if resourceValues.isSymbolicLink == true {
+                let resourceValues = try url.resolvingSymlinksInPath().resourceValues(forKeys: [.isDirectoryKey])
+                isDirectory = resourceValues.isDirectory == true
+                symbolicLinkDestination = url.resolvingSymlinksInPath()
+            }
+            else {
+                isDirectory = false
+                symbolicLinkDestination = nil
+            }
+            if isDirectory {
                 group.addTask {
                     try await search(
                         directory: foundPath,
+                        symbolicLinkDestination: symbolicLinkDestination,
                         matching: matching,
                         includingPropertiesForKeys: keys,
                         skipHiddenFiles: skipHiddenFiles,
