@@ -6,6 +6,26 @@ final class PatternTests: XCTestCase {
 	func test_pathWildcard_matchesSingleNestedFolders() throws {
 		try XCTAssertMatches("Target/AutoMockable.generated.swift", pattern: "**/*.generated.swift")
 	}
+    
+    func test_pathWildcard_matchesDirectFile() throws {
+        try XCTAssertMatches("AutoMockable.generated.swift", pattern: "**/*.generated.swift")
+    }
+    
+    func test_pathWildcard_does_not_match() throws {
+        try XCTAssertDoesNotMatch("AutoMockable.non-generated.swift", pattern: "**/*.generated.swift")
+    }
+    
+    func test_double_pathWildcard_matchesDirectFileInNestedDirectory() throws {
+        try XCTAssertMatches("Target/Pivot/AutoMockable.generated.swift", pattern: "**/Pivot/**/*.generated.swift")
+    }
+    
+    func test_double_pathWildcard_does_not_match_when_pivot_does_not_match() throws {
+        try XCTAssertDoesNotMatch("Target/NonMatchingPivot/AutoMockable.generated.swift", pattern: "**/Pivot/**/*.generated.swift")
+    }
+    
+    func test_double_pathWildcard_with_prefix_constants_matchesDirectFileInNestedDirectory() throws {
+        try XCTAssertMatches("Target/Extra/Pivot/AutoMockable.generated.swift", pattern: "Target/**/Pivot/**/*.generated.swift")
+    }
 
 	func test_pathWildcard_matchesMultipleNestedFolders() throws {
 		try XCTAssertMatches("Target/Generated/AutoMockable.generated.swift", pattern: "**/*.generated.swift")

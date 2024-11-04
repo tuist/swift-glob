@@ -34,7 +34,7 @@ extension Pattern {
 		_ name: Substring
 	) -> Bool {
 		if name.isEmpty {
-			if components.isEmpty || components.allSatisfy(\.matchesEmptyContent) {
+            if components.isEmpty || components.allSatisfy(\.matchesEmptyContent) || [.pathWildcard, .constant("/"), .componentWildcard] == components {
 				return true
 			} else {
 				return false
@@ -87,9 +87,26 @@ extension Pattern {
 					components: components.dropLast(),
 					remaining
 				)
-			} else {
-				return false
-			}
+            } else if [.pathWildcard, .constant("/")] == components.suffix(2) {
+                return match(
+                    components: components.dropLast(2),
+                    name
+                )
+            } else {
+                switch components.last {
+                case let .constant(constant):
+                    if constant.hasSuffix("/") {
+                        return match(
+                            components: components.dropLast() + [.constant(String(constant.dropLast(1)))],
+                            name
+                        )
+                    } else {
+                        return false
+                    }
+                default:
+                    return false
+                }
+            }
 		case (_, .singleCharacter, false):
 			guard name.last != options.pathSeparator else { return false }
 			return match(

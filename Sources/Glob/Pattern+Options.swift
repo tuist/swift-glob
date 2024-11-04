@@ -84,14 +84,6 @@ public extension Pattern {
 			emptyRangeBehavior: .error
 		)
 
-		/// Attempts to match the behavior of [VSCode](https://code.visualstudio.com/docs/editor/glob-patterns).
-		public static let vscode: Self = Options(
-			supportsPathLevelWildcards: true,
-			emptyRangeBehavior: .error,
-			supportsPatternLists: false,
-			rangeNegationCharacter: .caret
-		)
-
 		/// Attempts to match the behavior of [`filepath.Match` in go](https://pkg.go.dev/path/filepath#Match).
 		public static let go: Self = Options(
 			supportsPathLevelWildcards: false,
