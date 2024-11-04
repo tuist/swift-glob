@@ -7,6 +7,10 @@ final class PatternTests: XCTestCase {
 		try XCTAssertMatches("Target/AutoMockable.generated.swift", pattern: "**/*.generated.swift")
 	}
     
+    func test_pathWildcard_with_constant_component() throws {
+        try XCTAssertMatches("file.swift", pattern: "**/file.swift")
+    }
+    
     func test_pathWildcard_matchesDirectFile() throws {
         try XCTAssertMatches("AutoMockable.generated.swift", pattern: "**/*.generated.swift")
     }

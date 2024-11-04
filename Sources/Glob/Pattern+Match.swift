@@ -100,6 +100,11 @@ extension Pattern {
                             components: components.dropLast() + [.constant(String(constant.dropLast(1)))],
                             name
                         )
+                    } else if constant.hasPrefix("/") && components.first == .pathWildcard {
+                        return match(
+                            components: [.constant(String(constant.dropFirst()))],
+                            name
+                        )
                     } else {
                         return false
                     }
